@@ -420,6 +420,7 @@ namespace webrtc
         rtc::scoped_refptr<PeerConnectionObject> obj =
                 new rtc::RefCountedObject<PeerConnectionObject>(*this);
         PeerConnectionDependencies dependencies(obj);
+        dependencies.allocator->SetPortRange(40000, 50000);
         obj->connection = m_peerConnectionFactory->CreatePeerConnection(
                 config, std::move(dependencies));
         if (obj->connection == nullptr)
