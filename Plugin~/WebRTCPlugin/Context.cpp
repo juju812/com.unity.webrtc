@@ -169,7 +169,13 @@ namespace webrtc
 
         rtc::InitializeSSL();
 
-        m_audioDevice = new rtc::RefCountedObject<DummyAudioDevice>();
+        // m_audioDevice = new rtc::RefCountedObject<DummyAudioDevice>();
+        m_workerThread->Invoke<void>(
+            RTC_FROM_HERE,
+            [this]()
+            {
+                m_audioDevice = new rtc::RefCountedObject<DummyAudioDevice>();
+            });
 
         std::unique_ptr<webrtc::VideoEncoderFactory> videoEncoderFactory =
             m_encoderType == UnityEncoderType::UnityEncoderHardware ?
@@ -177,6 +183,9 @@ namespace webrtc
             : webrtc::CreateBuiltinVideoEncoderFactory();
         std::unique_ptr<webrtc::VideoDecoderFactory> videoDecoderFactory =
             std::make_unique<UnityVideoDecoderFactory>();
+
+        m_socketFactory = std::make_unique<UnitySocketFactory>(m_workerThread.get(), m_minPort, m_maxPort);
+        m_networkManager = std::make_unique<rtc::BasicNetworkManager>();
 
         m_peerConnectionFactory = CreatePeerConnectionFactory(
                                 m_workerThread.get(),
@@ -198,6 +207,9 @@ namespace webrtc
 
             m_peerConnectionFactory = nullptr;
             m_audioTrack = nullptr;
+
+            m_socketFactory.reset();
+            m_networkManager.reset();
 
             m_mapIdAndEncoder.clear();
             m_mediaSteamTrackList.clear();
@@ -420,7 +432,16 @@ namespace webrtc
         rtc::scoped_refptr<PeerConnectionObject> obj =
                 new rtc::RefCountedObject<PeerConnectionObject>(*this);
         PeerConnectionDependencies dependencies(obj);
-        dependencies.allocator->SetPortRange(40000, 50000);
+
+
+        m_workerThread->Invoke<void>(RTC_FROM_HERE, [this, &config,
+            &dependencies]() {
+                dependencies.allocator = std::make_unique<cricket::BasicPortAllocator>(
+                    m_networkManager.get(), m_socketFactory.get(),
+                    config.turn_customizer);
+                dependencies.allocator->SetPortRange(m_minPort, m_maxPort);
+            });
+
         obj->connection = m_peerConnectionFactory->CreatePeerConnection(
                 config, std::move(dependencies));
         if (obj->connection == nullptr)
