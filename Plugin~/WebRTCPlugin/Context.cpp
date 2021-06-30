@@ -184,8 +184,8 @@ namespace webrtc
         std::unique_ptr<webrtc::VideoDecoderFactory> videoDecoderFactory =
             std::make_unique<UnityVideoDecoderFactory>();
 
-        m_socketFactory = std::make_unique<UnitySocketFactory>(m_workerThread.get(), m_minPort, m_maxPort);
-        m_networkManager = std::make_unique<rtc::BasicNetworkManager>();
+        m_socketFactory.reset(new UnitySocketFactory(m_workerThread.get(), m_minPort, m_maxPort));
+        m_networkManager.reset(new rtc::BasicNetworkManager());
 
         m_peerConnectionFactory = CreatePeerConnectionFactory(
                                 m_workerThread.get(),
@@ -205,6 +205,10 @@ namespace webrtc
         {
             std::lock_guard<std::mutex> lock(mutex);
 
+            m_workerThread->Invoke<void>(RTC_FROM_HERE, [this]()
+            {
+                    m_audioDevice = nullptr;
+            });
             m_peerConnectionFactory = nullptr;
             m_audioTrack = nullptr;
 
