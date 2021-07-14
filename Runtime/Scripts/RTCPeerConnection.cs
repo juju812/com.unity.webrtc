@@ -37,6 +37,11 @@ namespace Unity.WebRTC
     /// <summary>
     /// 
     /// </summary>
+    /// <param name="e"></param>
+    public delegate void DelegatePCOnRemoveTrack(RTCRemoveTrackEvent e);
+    /// <summary>
+    /// 
+    /// </summary>
     public delegate void DelegateSetSessionDescSuccess();
     /// <summary>
     /// 
@@ -269,6 +274,12 @@ namespace Unity.WebRTC
         /// <seealso cref="RTCTrackEvent"/>
         public DelegateOnTrack OnTrack { get; set; }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <seealso cref="RTCTrackEvent"/>
+        public DelegatePCOnRemoveTrack OnRemoveTrack { get; set; }
+
         internal IntPtr GetSelfOrThrow()
         {
             if (self == IntPtr.Zero)
@@ -369,6 +380,18 @@ namespace Unity.WebRTC
                 if (WebRTC.Table[ptr] is RTCPeerConnection connection)
                 {
                     connection.OnTrack?.Invoke(new RTCTrackEvent(transceiver, connection));
+                }
+            });
+        }
+
+        [AOT.MonoPInvokeCallback(typeof(DelegateNativeOnRemoveTrack))]
+        static void PCOnRemoveTrack(IntPtr ptr, IntPtr receiver)
+        {
+            WebRTC.Sync(ptr, () =>
+            {
+                if (WebRTC.Table[ptr] is RTCPeerConnection connection)
+                {
+                    connection.OnRemoveTrack?.Invoke(new RTCRemoveTrackEvent(receiver, connection));
                 }
             });
         }
@@ -479,6 +502,7 @@ namespace Unity.WebRTC
             NativeMethods.PeerConnectionRegisterOnDataChannel(self, PCOnDataChannel);
             NativeMethods.PeerConnectionRegisterOnRenegotiationNeeded(self, PCOnNegotiationNeeded);
             NativeMethods.PeerConnectionRegisterOnTrack(self, PCOnTrack);
+            NativeMethods.PeerConnectionRegisterOnRemoveTrack(self, PCOnRemoveTrack);
             WebRTC.Context.PeerConnectionRegisterOnSetSessionDescSuccess(
                 self, OnSetSessionDescSuccess);
             WebRTC.Context.PeerConnectionRegisterOnSetSessionDescFailure(

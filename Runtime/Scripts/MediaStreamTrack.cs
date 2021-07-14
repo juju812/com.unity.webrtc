@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Unity.WebRTC
 {
@@ -129,10 +130,45 @@ namespace Unity.WebRTC
             }
         }
 
+        public IEnumerable<MediaStream> Streams
+        {
+            get
+            {
+                return Receiver.Streams;
+            }
+        }
+
         internal RTCTrackEvent(IntPtr ptrTransceiver, RTCPeerConnection peer)
         {
             Transceiver = WebRTC.FindOrCreate(
                 ptrTransceiver, ptr => new RTCRtpTransceiver(ptr, peer));
+        }
+    }
+
+    public class RTCRemoveTrackEvent
+    {
+        public RTCRtpReceiver Receiver { get; }
+
+        public MediaStreamTrack Track
+        {
+            get
+            {
+                return Receiver.Track;
+            }
+        }
+
+        public IEnumerable<MediaStream> Streams
+        {
+            get
+            {
+                return Receiver.Streams;
+            }
+        }
+
+        internal RTCRemoveTrackEvent(IntPtr ptrReceiver, RTCPeerConnection peer)
+        {
+            Receiver = WebRTC.FindOrCreate(
+                ptrReceiver, ptr => new RTCRtpReceiver(ptr, peer));
         }
     }
 

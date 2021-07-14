@@ -972,6 +972,11 @@ extern "C"
         obj->RegisterOnTrack(callback);
     }
 
+    UNITY_INTERFACE_EXPORT void PeerConnectionRegisterOnRemoveTrack(PeerConnectionObject* obj, DelegateOnRemoveTrack callback)
+    {
+        obj->RegisterOnRemoveTrack(callback);
+    }
+
     UNITY_INTERFACE_EXPORT bool TransceiverGetCurrentDirection(RtpTransceiverInterface* transceiver, RtpTransceiverDirection* direction)
     {
         if (transceiver->current_direction().has_value())
@@ -1231,6 +1236,17 @@ extern "C"
     UNITY_INTERFACE_EXPORT MediaStreamTrackInterface* ReceiverGetTrack(RtpReceiverInterface* receiver)
     {
         return receiver->track().get();
+    }
+
+    UNITY_INTERFACE_EXPORT MediaStreamInterface** ReceiverGetStreams(RtpReceiverInterface* receiver, size_t* length)
+    {
+        std::vector<rtc::scoped_refptr<MediaStreamInterface>> streams = receiver->streams();
+        std::vector<MediaStreamInterface*> result(streams.size());
+        for (const auto stream : streams)
+        {
+            result.push_back(stream.get());
+        }
+        return ConvertArray(result, length);
     }
 
     UNITY_INTERFACE_EXPORT int DataChannelGetID(DataChannelObject* dataChannelObj)

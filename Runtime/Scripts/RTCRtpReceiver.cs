@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace Unity.WebRTC
@@ -65,6 +66,15 @@ namespace Unity.WebRTC
             {
                 IntPtr ptrTrack = NativeMethods.ReceiverGetTrack(self);
                 return WebRTC.FindOrCreate(ptrTrack, MediaStreamTrack.Create);
+            }
+        }
+
+        public IEnumerable<MediaStream> Streams
+        {
+            get
+            {
+                IntPtr buf = NativeMethods.ReceiverGetStreams(self, out ulong length);
+                return WebRTC.Deserialize(buf, (int)length, ptr => new MediaStream(ptr));
             }
         }
     }

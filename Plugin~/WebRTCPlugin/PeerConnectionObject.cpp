@@ -91,6 +91,14 @@ namespace webrtc
             onTrack(this, transceiver.get());
         }
     }
+
+    void PeerConnectionObject::OnRemoveTrack(rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver)
+    {
+        if (onRemoveTrack != nullptr)
+        {
+            onRemoveTrack(this, receiver.get());
+        }
+    }
     // Called any time the IceConnectionState changes.
     void PeerConnectionObject::OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState new_state)
     {
