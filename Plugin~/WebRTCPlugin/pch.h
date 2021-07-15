@@ -23,6 +23,7 @@
 #include "rtc_base/ref_counted_object.h"
 #include "rtc_base/strings/json.h"
 #include "rtc_base/logging.h"
+#include "rtc_base/log_sinks.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/ssl_adapter.h"
 #include "rtc_base/arraysize.h"

@@ -174,6 +174,24 @@ namespace webrtc
 
     class UnityAudioFrameObserver;
     using DelegateAudioFrameObserverOnFrameReady = void(*)(UnityAudioFrameObserver*, const AudioFrame&);
+
+    class UnityLogStream : public rtc::LogSink {
+    public:
+        UnityLogStream(DelegateDebugLog callback) : on_log_message(callback) {
+
+        }
+
+        // log format can be defined in this interface
+        virtual void OnLogMessage(const std::string& message) {
+            if (on_log_message != nullptr)
+            {
+                on_log_message(message.c_str());
+            }
+        }
+
+    private:
+        DelegateDebugLog on_log_message = nullptr;
+    };
     
 } // end namespace webrtc
 } // end namespace unity

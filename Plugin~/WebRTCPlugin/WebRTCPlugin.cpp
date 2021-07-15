@@ -424,6 +424,11 @@ extern "C"
     UNITY_INTERFACE_EXPORT void RegisterDebugLog(DelegateDebugLog func)
     {
         delegateDebugLog = func;
+        rtc::LogMessage::LogTimestamps(true);
+        // auto logSink = new rtc::FileRotatingLogSink("E:\\", "webrtc", 10 * 1024 * 1024, 5);
+        // logSink->Init();
+        auto logSink = new UnityLogStream(delegateDebugLog);
+        rtc::LogMessage::AddLogToStream(logSink, rtc::INFO);
     }
 
     UNITY_INTERFACE_EXPORT void RegisterSetResolution(DelegateSetResolution func)
