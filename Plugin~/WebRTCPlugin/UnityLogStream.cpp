@@ -27,8 +27,11 @@ namespace unity {
 
     void UnityLogStream::RemoveLogStream()
     {
-        rtc::LogMessage::RemoveLogToStream(log_stream.get());
-        log_stream.reset();
+        if (log_stream)
+        {
+            rtc::LogMessage::RemoveLogToStream(log_stream.get());
+            log_stream.reset();
+        }
     }
 
 
