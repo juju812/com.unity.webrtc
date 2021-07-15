@@ -3,6 +3,7 @@
 #include "PeerConnectionObject.h"
 #include "MediaStreamObserver.h"
 #include "SetSessionDescriptionObserver.h"
+#include "UnityLogStream.h"
 #include "Context.h"
 #include "Codec/EncoderFactory.h"
 #include "GraphicsDevice/GraphicsUtility.h"
@@ -421,14 +422,17 @@ extern "C"
         track->RemoveSink(sink);
     }
 
-    UNITY_INTERFACE_EXPORT void RegisterDebugLog(DelegateDebugLog func)
+    UNITY_INTERFACE_EXPORT void RegisterDebugLog(DelegateDebugLog func, bool enableNativeLog)
     {
         delegateDebugLog = func;
-        rtc::LogMessage::LogTimestamps(true);
-        // auto logSink = new rtc::FileRotatingLogSink("E:\\", "webrtc", 10 * 1024 * 1024, 5);
-        // logSink->Init();
-        auto logSink = new UnityLogStream(delegateDebugLog);
-        rtc::LogMessage::AddLogToStream(logSink, rtc::INFO);
+        if (func != nullptr && enableNativeLog)
+        {
+            UnityLogStream::AddLogStream(func);
+        } else if (func == nullptr)
+        {
+            UnityLogStream::RemoveLogStream();
+        }
+
     }
 
     UNITY_INTERFACE_EXPORT void RegisterSetResolution(DelegateSetResolution func)

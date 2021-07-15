@@ -40,7 +40,8 @@ target_sources(WebRTCLib
     "UnityAudioFrameObserver.h"
     "UnitySocketFactory.h"
     "UnitySocketFactory.cpp"
- )
+    "UnityLogStream.h"
+    "UnityLogStream.cpp")
 
 if(iOS OR macOS)
   target_sources(WebRTCLib
