@@ -93,7 +93,7 @@ namespace webrtc
 
         webrtc::Clock* m_clock;
 
-        uint32_t m_frameRate = 30;
+        uint32_t m_frameRate = 60;
         uint32_t m_targetBitrate = 0;
         rtc::TimestampAligner timestamp_aligner_;
     };
