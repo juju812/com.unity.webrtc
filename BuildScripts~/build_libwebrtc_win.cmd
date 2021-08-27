@@ -10,27 +10,27 @@ set WEBRTC_VERSION=4183
 set DEPOT_TOOLS_WIN_TOOLCHAIN=0
 set CPPFLAGS=/WX-
 set GYP_GENERATORS=ninja,msvs-ninja
-set GYP_MSVS_VERSION=2017
+set GYP_MSVS_VERSION=2019
 set OUTPUT_DIR=out
 set ARTIFACTS_DIR=%cd%\artifacts
 set PYPI_URL=https://artifactory.prd.it.unity3d.com/artifactory/api/pypi/pypi/simple
-set vs2017_install=C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools
+set vs2019_install=C:\Program Files (x86)\Microsoft Visual Studio\2019\Community
 
 if not exist src (
   call fetch.bat --nohooks webrtc
   cd src
   call git.bat config --system core.longpaths true
-  call git.bat checkout  refs/remotes/branch-heads/%WEBRTC_VERSION%
+  call git.bat checkout  refs/echo otes/branch-heads/%WEBRTC_VERSION%
   cd ..
   call gclient.bat sync -f
 )
 
-rem add jsoncpp
-patch -N "src\BUILD.gn" < "%COMMAND_DIR%\patches\add_jsoncpp.patch"
+echo  add jsoncpp
+patch -N "src\BUILD.gn" --binary < "%COMMAND_DIR%\patches\add_jsoncpp.patch"
 
-rem install pywin32
-call "%cd%\depot_tools\bootstrap-3_8_0_chromium_8_bin\python\bin\python.exe" ^
-  -m pip install pywin32 --index-url "%PYPI_URL%" --upgrade
+echo  install pywin32
+call "%cd%\depot_tools\bootstrap-2@3_8_10_chromium_17_bin\python\bin\python.exe" ^
+  -m pip install pywin32 --upgrade
 
 mkdir "%ARTIFACTS_DIR%\lib"
 
@@ -40,11 +40,11 @@ for %%i in (x64) do (
   mkdir "%ARTIFACTS_DIR%/lib/%%i"
   for %%j in (true false) do (
 
-    rem generate ninja for release
+    echo  generate ninja for release
     call gn.bat gen %OUTPUT_DIR% --root="src" ^
-      --args="is_debug=%%j is_clang=false target_cpu=\"%%i\" rtc_include_tests=false rtc_build_examples=false rtc_use_h264=false symbol_level=0 enable_iterator_debugging=false"
+      --args="is_debug=%%j is_clang=false target_cpu=\"%%i\" rtc_include_tests=false rtc_build_examples=false proprietary_codecs=true rtc_use_h264=true ffmpeg_branding=\"Chrome\" treat_warnings_as_errors=false symbol_level=0 enable_iterator_debugging=false"
 
-    rem build
+    echo  build
     ninja.exe -C %OUTPUT_DIR%
 
     set filename=
@@ -54,30 +54,30 @@ for %%i in (x64) do (
       set filename=webrtc.lib
     )
 
-    rem copy static library for release build
+    echo  copy static library for release build
     copy "%OUTPUT_DIR%\obj\webrtc.lib" "%ARTIFACTS_DIR%\lib\%%i\!filename!"
   )
 )
 
 endlocal
 
-rem fix error when generate license
+echo  fix error when generate license
 patch -N "%cd%\src\tools_webrtc\libs\generate_licenses.py" < ^
   "%COMMAND_DIR%\patches\generate_licenses.patch"
 
-rem generate license
+echo  generate license
 call python.bat "%cd%\src\tools_webrtc\libs\generate_licenses.py" ^
   --target //:default %OUTPUT_DIR% %OUTPUT_DIR%
 
-rem unescape license
+echo  unescape license
 powershell -File "%COMMAND_DIR%\Unescape.ps1" "%OUTPUT_DIR%\LICENSE.md"
 
-rem copy header
-xcopy src\*.h "%ARTIFACTS_DIR%\include" /C /S /I /F /H
+echo  copy header
+xcopy src\*.h "%ARTIFACTS_DIR%\include" /C /S /I /F /H /y
 
-rem copy license
+echo  copy license
 copy "%OUTPUT_DIR%\LICENSE.md" "%ARTIFACTS_DIR%"
 
-rem create zip
+echo  create zip
 cd %ARTIFACTS_DIR%
 7z a -tzip webrtc-win.zip *
