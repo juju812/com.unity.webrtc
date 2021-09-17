@@ -908,11 +908,19 @@ namespace Unity.WebRTC
             Initialize = 0,
             Encode = 1,
             Finalize = 2,
+            UpdateEncoderParams = 3,
         }
 
         public static void InitializeEncoder(IntPtr callback, IntPtr track)
         {
             _command.IssuePluginEventAndData(callback, (int)VideoStreamRenderEventId.Initialize, track);
+            Graphics.ExecuteCommandBuffer(_command);
+            _command.Clear();
+        }
+
+        public static void UpdateEncoderParams(IntPtr callback, IntPtr track)
+        {
+            _command.IssuePluginEventAndData(callback, (int)VideoStreamRenderEventId.UpdateEncoderParams, track);
             Graphics.ExecuteCommandBuffer(_command);
             _command.Clear();
         }

@@ -19,9 +19,10 @@ namespace webrtc
     class IEncoder {
     public:
         virtual ~IEncoder() {};        
-        virtual void InitV() = 0;   //Can throw exception. 
+        virtual void InitV() = 0;   //Can throw exception.
+        virtual void SetResolution(int width, int height) = 0;
         virtual void SetRates(uint32_t bitRate, int64_t frameRate) = 0;
-        virtual void UpdateSettings() = 0;
+        virtual bool UpdateSettings() = 0;
         virtual bool CopyBuffer(void* frame) = 0;
         virtual bool EncodeFrame(int64_t timestamp_us) = 0;
         virtual bool IsSupported() const = 0;

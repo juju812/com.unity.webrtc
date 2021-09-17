@@ -50,8 +50,9 @@ namespace webrtc
         static uint32_t GetWidthInBytes(const NV_ENC_BUFFER_FORMAT bufferFormat, const uint32_t width);
 
         void InitV() override;
+        void SetResolution(int width, int height) override;
         void SetRates(uint32_t bitRate, int64_t frameRate) override;
-        void UpdateSettings() override;
+        bool UpdateSettings() override;
         bool CopyBuffer(void* frame) override;
         bool EncodeFrame(int64_t timestamp_us) override;
         bool IsSupported() const override { return m_isNvEncoderSupported; }
@@ -80,6 +81,7 @@ namespace webrtc
         void ProcessEncodedFrame(Frame& frame, int64_t timestamp_us);
         NV_ENC_REGISTERED_PTR RegisterResource(NV_ENC_INPUT_RESOURCE_TYPE type, void *pBuffer);
         void MapResources(InputFrame& inputFrame);
+
         NV_ENC_OUTPUT_PTR InitializeBitstreamBuffer();
         NV_ENC_INITIALIZE_PARAMS nvEncInitializeParams = {};
         NV_ENC_CONFIG nvEncConfig = {};

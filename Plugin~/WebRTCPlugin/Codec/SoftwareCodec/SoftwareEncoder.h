@@ -17,8 +17,9 @@ namespace webrtc
         SoftwareEncoder(int _width, int _height, IGraphicsDevice* device, UnityRenderingExtTextureFormat textureFormat);
         virtual ~SoftwareEncoder();
         void InitV() override;
+        void SetResolution(int width, int height) override {}
         void SetRates(uint32_t bitRate, int64_t frameRate) override {}
-        void UpdateSettings() override {}
+        bool UpdateSettings() override { return false; }
         bool CopyBuffer(void* frame) override;
         bool EncodeFrame(int64_t timestamp_us) override;
         bool IsSupported() const override { return true; }

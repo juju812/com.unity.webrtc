@@ -19,7 +19,8 @@ enum class VideoStreamRenderEventID
 {
     Initialize = 0,
     Encode = 1,
-    Finalize = 2
+    Finalize = 2,
+    UpdateEncoderParams = 3,
 };
 
 namespace unity
@@ -257,6 +258,19 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID, void* data)
         {
             s_context->FinalizeEncoder(s_mapEncoder[track].get());
             s_mapEncoder.erase(track);
+            return;
+        }
+        case VideoStreamRenderEventID::UpdateEncoderParams:
+        {
+            const VideoEncoderParameter* param = s_context->GetEncoderParameter(track);
+            UnityGfxRenderer gfxRenderer = GraphicsUtility::GetGfxRenderer();
+            void* ptr = GraphicsUtility::TextureHandleToNativeGraphicsPtr(
+                param->textureHandle, s_gfxDevice.get(), gfxRenderer);
+
+
+            UnityVideoTrackSource* source = s_context->GetVideoSource(track);
+            source->Init(ptr);
+            s_mapEncoder[track]->SetResolution(param->width, param->height);
             return;
         }
         default: {

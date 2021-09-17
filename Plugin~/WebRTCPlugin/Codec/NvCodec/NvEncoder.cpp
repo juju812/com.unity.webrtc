@@ -233,9 +233,10 @@ namespace webrtc
         }
     }
 
-    void NvEncoder::UpdateSettings()
+    bool NvEncoder::UpdateSettings()
     {
         bool settingChanged = false;
+        bool forceIDR = false;
         if (nvEncConfig.rcParams.averageBitRate != m_targetBitrate)
         {
             nvEncConfig.rcParams.averageBitRate = m_targetBitrate;
@@ -250,15 +251,33 @@ namespace webrtc
             settingChanged = true;
         }
 
+        if (nvEncInitializeParams.encodeWidth != m_width) {
+            nvEncInitializeParams.encodeWidth = m_width;
+            settingChanged = true;
+            forceIDR = true;
+        }
+
+        if (nvEncInitializeParams.encodeHeight != m_height) {
+            nvEncInitializeParams.encodeHeight = m_height;
+            settingChanged = true;
+            forceIDR = true;
+        }
+
         if (settingChanged)
         {
             NV_ENC_RECONFIGURE_PARAMS nvEncReconfigureParams;
             std::memcpy(&nvEncReconfigureParams.reInitEncodeParams, &nvEncInitializeParams, sizeof(nvEncInitializeParams));
             nvEncReconfigureParams.version = NV_ENC_RECONFIGURE_PARAMS_VER;
+            if (forceIDR) {
+                nvEncReconfigureParams.forceIDR = true;
+                nvEncReconfigureParams.resetEncoder = true;
+            }
             errorCode = pNvEncodeAPI->nvEncReconfigureEncoder(pEncoderInterface, &nvEncReconfigureParams);
             checkf(NV_RESULT(errorCode), StringFormat("Failed to reconfigure encoder setting %d %d %d",
                 errorCode, nvEncInitializeParams.frameRateNum, nvEncConfig.rcParams.averageBitRate).c_str());
         }
+
+        return settingChanged;
     }
 
     void NvEncoder::SetRates(uint32_t bitRate, int64_t frameRate)
@@ -269,8 +288,19 @@ namespace webrtc
         // isIdrFrame = true;
     }
 
+    void NvEncoder::SetResolution(int width, int height)
+    {
+        m_width = width;
+        m_height = height;
+    }
+
     bool NvEncoder::CopyBuffer(void* frame)
     {
+        if (nvEncInitializeParams.encodeWidth != m_width || nvEncInitializeParams.encodeHeight != m_height) {
+            ReleaseEncoderResources();
+            InitEncoderResources();
+        }
+        
         const int curFrameNum = GetCurrentFrameCount() % bufferedFrameNum;
         const auto tex = m_renderTextures[curFrameNum];
         if (tex == nullptr)
@@ -282,7 +312,7 @@ namespace webrtc
     //entry for encoding a frame
     bool NvEncoder::EncodeFrame(int64_t timestamp_us)
     {
-        UpdateSettings();
+        bool settingChanged = UpdateSettings();
         uint32 bufferIndexToWrite = frameCount % bufferedFrameNum;
         Frame& frame = bufferedFrames[bufferIndexToWrite];
 #pragma region configure per-frame encode parameters
@@ -297,9 +327,12 @@ namespace webrtc
         picParams.inputTimeStamp = frameCount;
 #pragma endregion
 #pragma region start encoding
-        if (isIdrFrame)
+        if (settingChanged) {
+            picParams.encodePicFlags = NV_ENC_PIC_FLAG_OUTPUT_SPSPPS;
+        }
+        if (settingChanged || isIdrFrame)
         {
-            picParams.encodePicFlags = NV_ENC_PIC_FLAG_FORCEIDR | NV_ENC_PIC_FLAG_FORCEINTRA;
+            picParams.encodePicFlags |= NV_ENC_PIC_FLAG_FORCEIDR | NV_ENC_PIC_FLAG_FORCEINTRA;
             isIdrFrame = false;
         }
         errorCode = pNvEncodeAPI->nvEncEncodePicture(pEncoderInterface, &picParams);
@@ -369,6 +402,7 @@ namespace webrtc
         checkf(NV_RESULT(errorCode), StringFormat("nvEncRegisterResource error is %d", errorCode).c_str());
         return registerResource.registeredResource;
     }
+
     void NvEncoder::MapResources(InputFrame& inputFrame)
     {
         NV_ENC_MAP_INPUT_RESOURCE mapInputResource = { 0 };
@@ -378,6 +412,7 @@ namespace webrtc
         checkf(NV_RESULT(errorCode), StringFormat("nvEncMapInputResource error is %d", errorCode).c_str());
         inputFrame.mappedResource = mapInputResource.mappedResource;
     }
+
     NV_ENC_OUTPUT_PTR NvEncoder::InitializeBitstreamBuffer()
     {
         NV_ENC_CREATE_BITSTREAM_BUFFER createBitstreamBuffer = { 0 };
@@ -386,6 +421,7 @@ namespace webrtc
         checkf(NV_RESULT(errorCode), StringFormat("nvEncCreateBitstreamBuffer error is %d", errorCode).c_str());
         return createBitstreamBuffer.bitstreamBuffer;
     }
+
     void NvEncoder::InitEncoderResources()
     {
         for (uint32 i = 0; i < bufferedFrameNum; i++)
@@ -418,6 +454,7 @@ namespace webrtc
         }
 
     }
+
     void NvEncoder::ReleaseEncoderResources() {
         for (Frame &frame : bufferedFrames) {
             ReleaseFrameInputBuffer(frame);

@@ -13,7 +13,8 @@ namespace Unity.WebRTC
         bool m_needFlip = false;
         UnityEngine.Texture m_sourceTexture;
         UnityEngine.RenderTexture m_destTexture;
-
+        int m_width;
+        int m_height;
         UnityVideoRenderer m_renderer;
 
         private static RenderTexture CreateRenderTexture(int width, int height,
@@ -40,6 +41,8 @@ namespace Unity.WebRTC
             m_needFlip = true;
             m_sourceTexture = source;
             m_destTexture = dest;
+            m_width = width;
+            m_height = height;
         }
 
         /// <summary>
@@ -101,6 +104,15 @@ namespace Unity.WebRTC
             //  - duplicate RenderTexture from its source texture
             //  - call Graphics.Blit command with flip material every frame
             //  - it might be better to implement this if possible
+            if (m_width != m_destTexture.width || m_height != m_destTexture.height)
+            {
+                m_destTexture.Release();
+                m_destTexture.width = m_width;
+                m_destTexture.height = m_height;
+                m_destTexture.Create();
+                WebRTC.Context.SetVideoEncoderParameter(self, m_width, m_height, m_sourceTexture.graphicsFormat, m_destTexture.GetNativeTexturePtr());
+                WebRTC.Context.UpdateEncoderParams(self);
+            }
             if (m_needFlip)
             {
                 UnityEngine.Graphics.Blit(m_sourceTexture, m_destTexture, WebRTC.flipMat);
@@ -162,6 +174,14 @@ namespace Unity.WebRTC
         {
             tracks.Add(this);
         }
+
+        public void SetSource(UnityEngine.Texture source)
+        {
+            m_width = source.width;
+            m_height = source.height;
+            m_sourceTexture = source;
+        }
+
 
         public override void Dispose()
         {
