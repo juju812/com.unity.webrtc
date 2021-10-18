@@ -1,5 +1,7 @@
 target_sources(WebRTCLib
   PRIVATE
+    NvDecoder.cpp
+    NvDecoder.h
     NvEncoder.cpp
     NvEncoder.h
     NvEncoderCuda.cpp

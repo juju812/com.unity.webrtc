@@ -180,9 +180,10 @@ namespace webrtc
     }
 #pragma warning(pop)
 
-    Context::Context(int uid, UnityEncoderType encoderType, bool forTest)
+    Context::Context(int uid, UnityEncoderType encoderType, UnityDecoderType decoderType)
         : m_uid(uid)
         , m_encoderType(encoderType)
+        , m_decoderType(decoderType)
     {
         m_workerThread.reset(new rtc::Thread(rtc::SocketServer::CreateDefault()));
         m_workerThread->Start();
@@ -204,8 +205,8 @@ namespace webrtc
             webrtc::CreateBuiltinVideoEncoderFactory();
 
         std::unique_ptr<webrtc::VideoDecoderFactory> videoDecoderFactory =
-            m_encoderType == UnityEncoderType::UnityEncoderHardware ?
-            std::make_unique<UnityVideoDecoderFactory>(forTest) :
+            m_decoderType == UnityDecoderType::UnityDecoderHardware ?
+            std::make_unique<UnityVideoDecoderFactory>() :
             webrtc::CreateBuiltinVideoDecoderFactory();
 
         rtc::scoped_refptr<AudioEncoderFactory> audioEncoderFactory = CreateAudioEncoderFactory();

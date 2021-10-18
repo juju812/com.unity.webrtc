@@ -170,5 +170,10 @@ namespace webrtc
         UnityEncoderHardware = 1,
     };
 
+    enum UnityDecoderType
+    {
+        UnityDecoderSoftware = 0,
+        UnityDecoderHardware = 1,
+    };
 } // end namespace webrtc
 } // end namespace unity

@@ -27,6 +27,8 @@ target_sources(WebRTCLib
     ScopedProfiler.h
     ScopedProfiler.cpp
     targetver.h
+    UnityVideoDecoder.h
+    UnityVideoDecoder.cpp
     UnityVideoDecoderFactory.cpp
     UnityVideoDecoderFactory.h
     UnityVideoEncoderFactory.cpp
@@ -47,8 +49,7 @@ target_sources(WebRTCLib
     UnitySocketFactory.h
     UnitySocketFactory.cpp
     UnityLogStream.h
-    UnityLogStream.cpp
-)
+    UnityLogStream.cpp)
 
 if(iOS OR macOS)
   target_sources(WebRTCLib
@@ -288,7 +289,8 @@ target_sources(WebRTCPlugin
     pch.h
     WebRTCPlugin.cpp
     UnityRenderEvent.cpp
-)
+    UnityVideoDecoder.h
+    UnityVideoDecoder.cpp)
 
 if(Android)
   target_sources(WebRTCPlugin

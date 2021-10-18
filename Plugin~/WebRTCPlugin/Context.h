@@ -59,7 +59,7 @@ namespace webrtc
     {
     public:
         
-        explicit Context(int uid = -1, UnityEncoderType encoderType = UnityEncoderHardware, bool forTest = false);
+        explicit Context(int uid = -1, UnityEncoderType encoderType = UnityEncoderHardware, UnityDecoderType decoderType = UnityDecoderHardware);
         ~Context();
 
         // Utility
@@ -150,6 +150,7 @@ namespace webrtc
     private:
         int m_uid;
         UnityEncoderType m_encoderType;
+        UnityDecoderType m_decoderType;
         std::unique_ptr<rtc::Thread> m_workerThread;
         std::unique_ptr<rtc::Thread> m_signalingThread;
         rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> m_peerConnectionFactory;

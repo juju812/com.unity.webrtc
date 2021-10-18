@@ -25,28 +25,17 @@ namespace webrtc
 #endif
     }
 
-    UnityVideoDecoderFactory::UnityVideoDecoderFactory(bool forTest)
+    UnityVideoDecoderFactory::UnityVideoDecoderFactory()
     : internal_decoder_factory_(CreateDecoderFactory())
-    , forTest_(forTest)
     {
     }
 
     std::vector<webrtc::SdpVideoFormat> UnityVideoDecoderFactory::GetSupportedFormats() const
     {
 #if CUDA_PLATFORM
-        // todo(kazuki):: Support H.264 hardware decoder for CUDA platforms (Linux and Windows)
-        // This is a workaround to generate SDPs contains H.264 codec for unit testing.
-        // The workaround will be removed if CUDA HW decoder is supported.
-        if(forTest_)
-        {
-            return { webrtc::CreateH264Format(
-                webrtc::H264::kProfileConstrainedBaseline,
-                webrtc::H264::kLevel5_1, "1") };
-        }
-        else
-        {
-            return internal_decoder_factory_->GetSupportedFormats();
-        }
+        return { webrtc::CreateH264Format(
+            webrtc::H264::kProfileConstrainedBaseline,
+            webrtc::H264::kLevel5_1, "1") };
 #else
         return internal_decoder_factory_->GetSupportedFormats();
 #endif
@@ -60,7 +49,11 @@ namespace webrtc
             RTC_LOG(LS_INFO) << "AV1 codec is not supported";
             return nullptr;
         }
+#if CUDA_PLATFORM
+        return std::make_unique<DummyVideoDecoder>();
+#else
         return internal_decoder_factory_->CreateVideoDecoder(format);
+#endif
     }
 
 }  // namespace webrtc
