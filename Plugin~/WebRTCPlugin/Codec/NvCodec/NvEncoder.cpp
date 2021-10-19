@@ -235,6 +235,7 @@ namespace webrtc
     void NvEncoder::UpdateSettings()
     {
         bool settingChanged = false;
+        bool forceIDR = false;
         if (nvEncConfig.rcParams.averageBitRate != m_targetBitrate)
         {
             nvEncConfig.rcParams.averageBitRate = m_targetBitrate;
@@ -248,12 +249,23 @@ namespace webrtc
             nvEncInitializeParams.frameRateNum = targetFramerate;
             settingChanged = true;
         }
+        if (nvEncInitializeParams.encodeWidth != m_width || nvEncInitializeParams.encodeHeight != m_height) {
+            nvEncInitializeParams.encodeWidth = m_width;
+            nvEncInitializeParams.encodeHeight = m_height;
+            settingChanged = true;
+            forceIDR = true;
+            spsppsFlag = true;
+        }
 
         if (settingChanged)
         {
             NV_ENC_RECONFIGURE_PARAMS nvEncReconfigureParams;
             std::memcpy(&nvEncReconfigureParams.reInitEncodeParams, &nvEncInitializeParams, sizeof(nvEncInitializeParams));
             nvEncReconfigureParams.version = NV_ENC_RECONFIGURE_PARAMS_VER;
+            if (forceIDR) {
+                nvEncReconfigureParams.forceIDR = true;
+                nvEncReconfigureParams.resetEncoder = true;
+            }
             errorCode = pNvEncodeAPI->nvEncReconfigureEncoder(pEncoderInterface, &nvEncReconfigureParams);
             checkf(NV_RESULT(errorCode), StringFormat("Failed to reconfigure encoder setting %d %d %d",
                 errorCode, nvEncInitializeParams.frameRateNum, nvEncConfig.rcParams.averageBitRate).c_str());
@@ -267,8 +279,19 @@ namespace webrtc
         isIdrFrame = true;
     }
 
+    void NvEncoder::SetResolution(int width, int height)
+    {
+        m_width = width;
+        m_height = height;
+    }
+
     bool NvEncoder::CopyBuffer(void* frame)
     {
+        if (nvEncInitializeParams.encodeWidth != m_width || nvEncInitializeParams.encodeHeight != m_height) {
+            ReleaseEncoderResources();
+            InitEncoderResources();
+        }
+
         const int curFrameNum = GetCurrentFrameCount() % bufferedFrameNum;
         const auto tex = m_renderTextures[curFrameNum];
         if (tex == nullptr)
@@ -295,9 +318,13 @@ namespace webrtc
         picParams.inputTimeStamp = frameCount;
 #pragma endregion
 #pragma region start encoding
+        if (spsppsFlag) {
+            picParams.encodePicFlags = NV_ENC_PIC_FLAG_OUTPUT_SPSPPS;
+            spsppsFlag = false;
+        }
         if (isIdrFrame)
         {
-            picParams.encodePicFlags = NV_ENC_PIC_FLAG_FORCEIDR | NV_ENC_PIC_FLAG_FORCEINTRA;
+            picParams.encodePicFlags |= NV_ENC_PIC_FLAG_FORCEIDR | NV_ENC_PIC_FLAG_FORCEINTRA;
             isIdrFrame = false;
         }
         errorCode = pNvEncodeAPI->nvEncEncodePicture(pEncoderInterface, &picParams);

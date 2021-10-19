@@ -49,6 +49,7 @@ namespace webrtc
 
         void InitV() override;
         void SetRates(uint32_t bitRate, int64_t frameRate) override;
+        void SetResolution(int width, int height) override;
         void UpdateSettings() override;
         bool CopyBuffer(void* frame) override;
         bool EncodeFrame(int64_t timestamp_us) override;
@@ -88,7 +89,7 @@ namespace webrtc
         uint64 frameCount = 0;
         void* pEncoderInterface = nullptr;
         bool isIdrFrame = false;
-
+        bool spsppsFlag = false;
         webrtc::Clock* m_clock;
 
         uint32_t m_frameRate = 30;

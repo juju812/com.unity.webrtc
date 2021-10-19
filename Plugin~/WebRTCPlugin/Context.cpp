@@ -309,9 +309,25 @@ namespace webrtc
         UnityRenderingExtTextureFormat textureFormat,
         void* textureHandle)
     {
-        m_mapVideoEncoderParameter[track] =
-            std::make_unique<VideoEncoderParameter>(
-                width, height, textureFormat, textureHandle);
+        if (!m_mapVideoEncoderParameter.count(track)) {
+            m_mapVideoEncoderParameter[track] =
+                std::make_unique<VideoEncoderParameter>(
+                    width, height, textureFormat, textureHandle);
+        }
+        else {
+            if (width != 0) {
+                m_mapVideoEncoderParameter[track]->width = width;
+            }
+            if (height != 0) {
+                m_mapVideoEncoderParameter[track]->height = height;
+            }
+            if (textureHandle != nullptr) {
+                m_mapVideoEncoderParameter[track]->textureHandle = textureHandle;
+            }
+            if (textureFormat > kUnityRenderingExtFormatNone && textureFormat <= kUnityRenderingExtFormatLast) {
+                m_mapVideoEncoderParameter[track]->textureFormat = textureFormat;
+            }
+        }
     }
 
     void Context::SetKeyFrame(uint32_t id)
