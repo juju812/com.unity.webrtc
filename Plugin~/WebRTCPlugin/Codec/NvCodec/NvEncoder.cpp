@@ -274,9 +274,9 @@ namespace webrtc
 
     void NvEncoder::SetRates(uint32_t bitRate, int64_t frameRate)
     {
-        m_frameRate = static_cast<uint32_t>(frameRate);
+        //m_frameRate = static_cast<uint32_t>(frameRate);
         m_targetBitrate = bitRate;
-        isIdrFrame = true;
+        //isIdrFrame = true;
     }
 
     void NvEncoder::SetResolution(int width, int height)
