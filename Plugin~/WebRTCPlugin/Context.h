@@ -1,11 +1,12 @@
 #pragma once
 #include <mutex>
-
+#include "p2p/client/basic_port_allocator.h"
 #include "AudioTrackSinkAdapter.h"
 #include "DummyAudioDevice.h"
 #include "DummyVideoEncoder.h"
 #include "PeerConnectionObject.h"
 #include "UnityVideoRenderer.h"
+#include "UnitySocketFactory.h"
 #include "UnityVideoTrackSource.h"
 #include "Codec/IEncoder.h"
 
@@ -152,6 +153,10 @@ namespace webrtc
         std::unique_ptr<rtc::Thread> m_workerThread;
         std::unique_ptr<rtc::Thread> m_signalingThread;
         rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> m_peerConnectionFactory;
+        std::unique_ptr<UnitySocketFactory> m_socketFactory;
+        uint16_t m_minPort = 40000;
+        uint16_t m_maxPort = 50000;
+        std::unique_ptr<rtc::BasicNetworkManager> m_networkManager;
         rtc::scoped_refptr<DummyAudioDevice> m_audioDevice;
         std::vector<rtc::scoped_refptr<const webrtc::RTCStatsReport>> m_listStatsReport;
         std::map<const PeerConnectionObject*, rtc::scoped_refptr<PeerConnectionObject>> m_mapClients;

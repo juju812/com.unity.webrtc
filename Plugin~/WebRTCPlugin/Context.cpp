@@ -209,7 +209,10 @@ namespace webrtc
             webrtc::CreateBuiltinVideoDecoderFactory();
 
         rtc::scoped_refptr<AudioEncoderFactory> audioEncoderFactory = CreateAudioEncoderFactory();
-        rtc::scoped_refptr<AudioDecoderFactory>  audioDecoderFactory = CreateAudioDecoderFactory();
+        rtc::scoped_refptr<AudioDecoderFactory> audioDecoderFactory = CreateAudioDecoderFactory();
+
+        m_socketFactory = std::make_unique<UnitySocketFactory>(m_workerThread.get(), m_minPort, m_maxPort);
+        m_networkManager = std::make_unique<rtc::BasicNetworkManager>();
 
         m_peerConnectionFactory = CreatePeerConnectionFactory(
                                 m_workerThread.get(),
@@ -253,6 +256,9 @@ namespace webrtc
             m_workerThread.reset();
             m_signalingThread->Quit();
             m_signalingThread.reset();
+
+            m_socketFactory.reset();
+            m_networkManager.reset();
         }
     }
 
@@ -511,8 +517,15 @@ namespace webrtc
         rtc::scoped_refptr<PeerConnectionObject> obj =
                 new rtc::RefCountedObject<PeerConnectionObject>(*this);
         PeerConnectionDependencies dependencies(obj);
-        //TODO: make portrange configurable
-        dependencies.allocator->SetPortRange(40000, 50000);
+
+        //TODO: make port range configurable
+        m_workerThread->Invoke<void>(RTC_FROM_HERE, [this, &config,
+            &dependencies]() {
+                dependencies.allocator = std::make_unique<cricket::BasicPortAllocator>(
+                    m_networkManager.get(), m_socketFactory.get(),
+                    config.turn_customizer);
+                dependencies.allocator->SetPortRange(m_minPort, m_maxPort);
+            });
         obj->connection = m_peerConnectionFactory->CreatePeerConnection(
                 config, std::move(dependencies));
         if (obj->connection == nullptr)
