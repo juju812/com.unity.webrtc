@@ -12,6 +12,15 @@ namespace Unity.WebRTC
     public delegate void OnAudioReceived(AudioClip renderer);
 
     /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="audioData"></param>
+    /// <param name="sampleRate"></param>
+    /// <param name="numOfChannels"></param>
+    /// <param name="numOfFrames"></param>
+    public delegate void DelegateOnAudioReceive(float[] audioData, int sampleRate, int numOfChannels, int numOfFrames);
+
+    /// <summary>
     ///
     /// </summary>
     public class AudioStreamTrack : MediaStreamTrack
@@ -21,6 +30,10 @@ namespace Unity.WebRTC
         /// </summary>
         public event OnAudioReceived OnAudioReceived;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public event DelegateOnAudioReceive OnAudioReceiveEvent;
         /// <summary>
         ///
         /// </summary>
@@ -234,18 +247,24 @@ namespace Unity.WebRTC
 
         private void OnAudioReceivedInternal(float[] audioData, int sampleRate, int channels, int numOfFrames)
         {
-            if (_streamRenderer == null)
+            if (OnAudioReceiveEvent != null)
             {
-                if(frameCountReceiveDataForIgnoring < MaxFrameCountReceiveDataForIgnoring)
-                {
-                    frameCountReceiveDataForIgnoring++;
-                    return;
-                }
-                _streamRenderer = new AudioStreamRenderer(this.Id, sampleRate, channels);
-
-                OnAudioReceived?.Invoke(_streamRenderer.clip);
+                OnAudioReceiveEvent(audioData, sampleRate, channels, numOfFrames);
             }
-            _streamRenderer?.SetData(audioData);
+            else {
+                if (_streamRenderer == null)
+                {
+                    if (frameCountReceiveDataForIgnoring < MaxFrameCountReceiveDataForIgnoring)
+                    {
+                        frameCountReceiveDataForIgnoring++;
+                        return;
+                    }
+                    _streamRenderer = new AudioStreamRenderer(this.Id, sampleRate, channels);
+
+                    OnAudioReceived?.Invoke(_streamRenderer.clip);
+                }
+                _streamRenderer?.SetData(audioData);
+            }
         }
 
         [AOT.MonoPInvokeCallback(typeof(DelegateAudioReceive))]
