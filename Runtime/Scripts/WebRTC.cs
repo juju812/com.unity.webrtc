@@ -364,24 +364,14 @@ namespace Unity.WebRTC
         /// <param name="limitTextureSize"></param>
         public static void Initialize(EncoderType type = EncoderType.Hardware, bool limitTextureSize = true)
         {
-            if (s_context != null)
-                throw new InvalidOperationException("Already initialized WebRTC.");
-
-            Initialize(type, limitTextureSize, false);
+            Initialize(type, limitTextureSize, false, false, NativeLoggingSeverity.LS_INFO);
         }
 
-        public static void Initialize(EncoderType type, bool limitTextureSize, bool forTest, bool enableNativeLog,
-            NativeLoggingSeverity nativeLoggingSeverity)
-        {
-            if (s_context != null)
-                throw new InvalidOperationException("Already initialized WebRTC.");
-
-            Initialize(type, limitTextureSize, forTest, enableNativeLog, nativeLoggingSeverity);
-        }
-
-        internal static void Initialize(EncoderType type, bool limitTextureSize, bool forTest, bool enableNativeLog = false,
+        public static void Initialize(EncoderType type, bool limitTextureSize, bool forTest, bool enableNativeLog = false,
             NativeLoggingSeverity nativeLoggingSeverity = NativeLoggingSeverity.LS_INFO)
         {
+            if (s_context != null)
+                throw new InvalidOperationException("Already initialized WebRTC.");
             // todo(kazuki): Add this event to avoid crash caused by hot-reload.
             // Dispose of all before reloading assembly.
 #if UNITY_EDITOR
@@ -462,7 +452,7 @@ namespace Unity.WebRTC
                 s_context = null;
             }
             s_syncContext = null;
-            NativeMethods.RegisterDebugLog(null);
+            NativeMethods.RegisterDebugLog(null, false, NativeLoggingSeverity.LS_INFO);
 
 #if UNITY_EDITOR
             UnityEditor.AssemblyReloadEvents.beforeAssemblyReload -= OnBeforeAssemblyReload;
