@@ -97,6 +97,17 @@ namespace Unity.WebRTC
             //  - duplicate RenderTexture from its source texture
             //  - call Graphics.Blit command with flip material every frame
             //  - it might be better to implement this if possible
+            if (m_sourceTexture.width != m_destTexture.width || m_sourceTexture.height != m_destTexture.height)
+            {
+                m_destTexture.Release();
+                m_destTexture.width = m_sourceTexture.width;
+                m_destTexture.height = m_sourceTexture.height;
+                m_destTexture.Create();
+                WebRTC.Context.SetVideoEncoderParameter(self, m_sourceTexture.width, m_sourceTexture.height,
+                                                        m_sourceTexture.graphicsFormat, m_destTexture.GetNativeTexturePtr());
+                WebRTC.Context.UpdateEncoderParams(self);
+            }
+
             if (m_needFlip)
             {
                 Graphics.Blit(m_sourceTexture, m_destTexture, WebRTC.flipMat);
@@ -104,6 +115,16 @@ namespace Unity.WebRTC
 
             WebRTC.Context.Encode(GetSelfOrThrow());
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sourceTexture"></param>
+        public void SetSourceTexture(UnityEngine.Texture sourceTexture)
+        {
+            m_sourceTexture = sourceTexture;
+        }
+
 
         /// <summary>
         /// Creates a new VideoStream object.

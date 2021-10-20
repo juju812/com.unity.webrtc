@@ -286,6 +286,12 @@ namespace Unity.WebRTC
             VideoEncoderMethods.InitializeEncoder(renderFunction, track);
         }
 
+        internal void UpdateEncoderParams(IntPtr track)
+        {
+            renderFunction = renderFunction == IntPtr.Zero ? GetRenderEventFunc() : renderFunction;
+            VideoEncoderMethods.UpdateEncoderParams(renderFunction, track);
+        }
+
         internal void FinalizeEncoder(IntPtr track)
         {
             renderFunction = renderFunction == IntPtr.Zero ? GetRenderEventFunc() : renderFunction;
