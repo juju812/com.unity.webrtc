@@ -46,6 +46,8 @@ target_sources(WebRTCLib
     WebRTCPlugin.h
     UnitySocketFactory.h
     UnitySocketFactory.cpp
+    UnityLogStream.h
+    UnityLogStream.cpp
 )
 
 if(iOS OR macOS)

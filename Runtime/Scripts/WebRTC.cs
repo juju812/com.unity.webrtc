@@ -313,6 +313,21 @@ namespace Unity.WebRTC
     }
 
     /// <summary>
+    /// 
+    /// </summary>
+    public enum NativeLoggingSeverity
+    {
+        LS_VERBOSE,
+        LS_INFO,
+        LS_WARNING,
+        LS_ERROR,
+        LS_NONE,
+        INFO = LS_INFO,
+        WARNING = LS_WARNING,
+        LERROR = LS_ERROR
+    };
+
+    /// <summary>
     ///
     /// </summary>
     public static class WebRTC
@@ -355,8 +370,17 @@ namespace Unity.WebRTC
             Initialize(type, limitTextureSize, false);
         }
 
+        public static void Initialize(EncoderType type, bool limitTextureSize, bool forTest, bool enableNativeLog,
+            NativeLoggingSeverity nativeLoggingSeverity)
+        {
+            if (s_context != null)
+                throw new InvalidOperationException("Already initialized WebRTC.");
 
-        internal static void Initialize(EncoderType type, bool limitTextureSize, bool forTest)
+            Initialize(type, limitTextureSize, forTest, enableNativeLog, nativeLoggingSeverity);
+        }
+
+        internal static void Initialize(EncoderType type, bool limitTextureSize, bool forTest, bool enableNativeLog = false,
+            NativeLoggingSeverity nativeLoggingSeverity = NativeLoggingSeverity.LS_INFO)
         {
             // todo(kazuki): Add this event to avoid crash caused by hot-reload.
             // Dispose of all before reloading assembly.
@@ -383,7 +407,7 @@ namespace Unity.WebRTC
                 }
             }
 
-            NativeMethods.RegisterDebugLog(DebugLog);
+            NativeMethods.RegisterDebugLog(DebugLog, enableNativeLog, nativeLoggingSeverity);
 #if UNITY_IOS && !UNITY_EDITOR
             NativeMethods.RegisterRenderingWebRTCPlugin();
 #endif
@@ -787,7 +811,8 @@ namespace Unity.WebRTC
         [return: MarshalAs(UnmanagedType.U1)]
         public static extern bool GetHardwareEncoderSupport();
         [DllImport(WebRTC.Lib)]
-        public static extern void RegisterDebugLog(DelegateDebugLog func);
+        public static extern void RegisterDebugLog(DelegateDebugLog func, [MarshalAs(UnmanagedType.U1)] bool enableNativeLog,
+            NativeLoggingSeverity nativeLoggingSeverity);
         [DllImport(WebRTC.Lib)]
         public static extern IntPtr ContextCreate(int uid, EncoderType encoderType, [MarshalAs(UnmanagedType.U1)] bool forTest);
         [DllImport(WebRTC.Lib)]
