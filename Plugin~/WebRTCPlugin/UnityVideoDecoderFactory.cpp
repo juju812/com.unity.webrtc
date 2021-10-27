@@ -1,5 +1,7 @@
 #include "pch.h"
+#include "UnityVideoDecoder.h"
 #include "UnityVideoDecoderFactory.h"
+
 #include "absl/strings/match.h"
 
 #if UNITY_OSX || UNITY_IOS
@@ -50,7 +52,13 @@ namespace webrtc
             return nullptr;
         }
 #if CUDA_PLATFORM
-        return std::make_unique<DummyVideoDecoder>();
+        if (absl::EqualsIgnoreCase(format.name, cricket::kH264CodecName)) {
+            return UnityVideoDecoder::Create() ;
+        }
+        else
+        {
+            return internal_decoder_factory_->CreateVideoDecoder(format);
+        }
 #else
         return internal_decoder_factory_->CreateVideoDecoder(format);
 #endif

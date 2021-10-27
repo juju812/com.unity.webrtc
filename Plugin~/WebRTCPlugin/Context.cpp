@@ -36,14 +36,14 @@ namespace webrtc
         return nullptr;
     }
 
-    Context* ContextManager::CreateContext(int uid, UnityEncoderType encoderType, bool forTest)
+    Context* ContextManager::CreateContext(int uid, UnityEncoderType encoderType, UnityDecoderType decoderType)
     {
         auto it = s_instance.m_contexts.find(uid);
         if (it != s_instance.m_contexts.end()) {
             DebugLog("Using already created context with ID %d", uid);
             return nullptr;
         }
-        auto ctx = new Context(uid, encoderType, forTest);
+        auto ctx = new Context(uid, encoderType, decoderType);
         s_instance.m_contexts[uid].reset(ctx);
         return ctx;
     }

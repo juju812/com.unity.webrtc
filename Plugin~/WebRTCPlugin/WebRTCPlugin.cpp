@@ -433,7 +433,7 @@ extern "C"
         delegateSetResolution = func;
     }
 
-    UNITY_INTERFACE_EXPORT Context* ContextCreate(int uid, UnityEncoderType encoderType, bool forTest)
+    UNITY_INTERFACE_EXPORT Context* ContextCreate(int uid, UnityEncoderType encoderType, UnityDecoderType decoderType)
     {
         auto ctx = ContextManager::GetInstance()->GetContext(uid);
         if (ctx != nullptr)
@@ -441,7 +441,7 @@ extern "C"
             DebugLog("Already created context with ID %d", uid);
             return ctx;
         }
-        ctx = ContextManager::GetInstance()->CreateContext(uid, encoderType, forTest);
+        ctx = ContextManager::GetInstance()->CreateContext(uid, encoderType, decoderType);
         return ctx;
     }
 

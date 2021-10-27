@@ -27,7 +27,7 @@ namespace webrtc
         static ContextManager* GetInstance() { return &s_instance; }
      
         Context* GetContext(int uid) const;
-        Context* CreateContext(int uid, UnityEncoderType encoderType, bool forTest);
+        Context* CreateContext(int uid, UnityEncoderType encoderType, UnityDecoderType decoderType);
         void DestroyContext(int uid);
         void SetCurContext(Context*);
         bool Exists(Context* context);

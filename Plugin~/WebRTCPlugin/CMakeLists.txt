@@ -49,7 +49,7 @@ target_sources(WebRTCLib
     UnitySocketFactory.h
     UnitySocketFactory.cpp
     UnityLogStream.h
-    UnityLogStream.cpp)
+    UnityLogStream.cpp )
 
 if(iOS OR macOS)
   target_sources(WebRTCLib
@@ -290,7 +290,7 @@ target_sources(WebRTCPlugin
     WebRTCPlugin.cpp
     UnityRenderEvent.cpp
     UnityVideoDecoder.h
-    UnityVideoDecoder.cpp)
+    UnityVideoDecoder.cpp )
 
 if(Android)
   target_sources(WebRTCPlugin
