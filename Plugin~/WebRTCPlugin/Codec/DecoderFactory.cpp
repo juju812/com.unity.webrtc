@@ -39,7 +39,7 @@ namespace webrtc
         int iGpu = 0;
         cuDeviceGet(&cuDevice, iGpu);
         CUcontext cuContext = NULL;
-        cuCtxCreate(&cuContext, CU_CTX_SCHED_BLOCKING_SYNC, cuDevice);
+        cuCtxCreate(&cuContext, CU_CTX_SCHED_AUTO, cuDevice);
         cudaVideoCodec cudaVideoCodec = GetCudaVideoCodec(codecType);
         std::unique_ptr<IDecoder> decoder = std::make_unique<NvDecoder>(cuContext, cudaVideoCodec, width, height);
         return decoder;

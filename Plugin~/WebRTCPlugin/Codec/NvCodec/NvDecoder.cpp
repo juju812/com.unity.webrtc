@@ -17,7 +17,6 @@
 
 #include "nvcuvid.h"
 #include "NvDecoder.h"
-#include "DummyVideoEncoder.h"
 
 #define START_TIMER auto start = std::chrono::high_resolution_clock::now();
 #define STOP_TIMER(print_message) std::cout << print_message << \
@@ -558,8 +557,8 @@ namespace webrtc
         m_bDeviceFramePitched = false;
         m_bUseDeviceFrame = false;
         bool bLowLatency = false;
-        m_cropRect = Rect{ 0,0,maxWidth,maxHeight };
-        m_resizeDim = Dim{ maxWidth,maxHeight };
+        //m_cropRect = NULL;
+        //m_resizeDim = NULL;
 
         NVDEC_API_CALL(cuvidCtxLockCreate(&m_ctxLock, cuContext));
 
@@ -579,8 +578,6 @@ namespace webrtc
     NvDecoder::~NvDecoder() {
 
         START_TIMER
-
-            delete m_pMutex;
         cuCtxPushCurrent(m_cuContext);
         cuCtxPopCurrent(NULL);
 
@@ -614,18 +611,18 @@ namespace webrtc
                 delete[] pFrame;
             }
         }
+        delete m_pMutex;
         cuvidCtxLockDestroy(m_ctxLock);
         STOP_TIMER("Session Deinitialization Time: ");
     }
 
-    bool NvDecoder::decode(const uint8_t* pData, int nSize, uint8_t*** pppFrame, int* pnFrameReturned, uint32_t flags, int64_t** ppTimestamp, int64_t timestamp, CUstream stream)
+    bool NvDecoder::Decode(const uint8_t* pData, int nSize, uint8_t*** pppFrame, int* pnFrameReturned, uint32_t flags, int64_t** ppTimestamp, int64_t timestamp, CUstream stream)
     {
         if (!m_hParser)
         {
             NVDEC_THROW_ERROR("Parser not initialized.", CUDA_ERROR_NOT_INITIALIZED);
             return false;
         }
-
         m_nDecodedFrame = 0;
         CUVIDSOURCEDATAPACKET packet = { 0 };
         packet.payload = pData;
@@ -647,9 +644,8 @@ namespace webrtc
             {
                 m_vpFrameRet.clear();
                 std::lock_guard<std::mutex> lock(m_mtxVPFrame);
-                std::vector<uint8_t*>::iterator it = m_vpFrame.begin();
                 m_vpFrameRet.insert(m_vpFrameRet.begin(), m_vpFrame.begin(), m_vpFrame.begin() + m_nDecodedFrame);
-                *pppFrame = &m_vpFrame[0];
+                *pppFrame = &m_vpFrameRet[0];
             }
 
             if (ppTimestamp)
@@ -662,30 +658,6 @@ namespace webrtc
             *pnFrameReturned = m_nDecodedFrame;
         }
         return true;
-    }
-
-
-    webrtc::VideoFrame NvDecoder::Decode(const uint8_t* pData, int nSize)
-    {
-        uint8_t** ppFrame;
-        int nFrameReturned = 0;
-        int64_t pts, *pTimestamp;
-        CUdeviceptr dpFrame = 0;
-        decode(pData, nSize, &ppFrame, &nFrameReturned, 0, &pTimestamp, pts);
-        std::vector<uint8_t> data = {};
-        for (int i = 0; i < m_nDecodedFrame; i++) {
-            data.push_back(*m_vpFrameRet[i]);
-        }
-        const rtc::scoped_refptr<FrameBuffer> buffer =
-            new rtc::RefCountedObject<FrameBuffer>(
-                GetWidth(), GetHeight(), data, Id());
-        webrtc::VideoFrame::Builder builder =
-            webrtc::VideoFrame::Builder()
-            .set_video_frame_buffer(buffer)
-            .set_timestamp_us(m_vTimestamp[m_nDecodedFrame - 1])
-            .set_timestamp_rtp(0)
-            .set_ntp_time_ms(rtc::TimeMillis());
-        return builder.build();
     }
 }
 }

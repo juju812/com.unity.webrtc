@@ -101,14 +101,13 @@ namespace webrtc
         cudaVideoSurfaceFormat GetOutputFormat() { return m_eOutputFormat; }
         CUVIDEOFORMAT GetVideoFormatInfo() { assert(m_nWidth); return m_videoFormat; }
         //std::string GetVideoInfo() const { return m_videoInfo.str(); }
-        webrtc::VideoFrame Decode(const uint8_t* pData, int nSize);
+        bool Decode(const uint8_t* pData, int nSize, uint8_t*** pppFrame, int* pnFrameReturned, uint32_t flags = 0, int64_t** ppTimestamp = NULL, int64_t timestamp = 0, CUstream stream = 0);
         //bool Decode(const uint8_t* pData, int nSize, uint8_t*** pppFrame, int* pnFrameReturned, uint32_t flags = 0, int64_t** ppTimestamp = NULL, int64_t timestamp = 0, CUstream stream = 0);
         //bool DecodeLockFrame(const uint8_t* pData, int nSize, uint8_t*** pppFrame, int* pnFrameReturned, uint32_t flags = 0, int64_t** ppTimestamp = NULL, int64_t timestamp = 0, CUstream stream = 0);
         //void UnlockFrame(uint8_t** ppFrame, int nFrame);
         int setReconfigParams(const Rect* pCropRect, const Dim* pResizeDim);
 
     private:
-        bool decode(const uint8_t* pData, int nSize, uint8_t*** pppFrame, int* pnFrameReturned, uint32_t flags = 0, int64_t** ppTimestamp = NULL, int64_t timestamp = 0, CUstream stream = 0);
         static int CUDAAPI HandleVideoSequenceProc(void* pUserData, CUVIDEOFORMAT* pVideoFormat) { return ((NvDecoder*)pUserData)->HandleVideoSequence(pVideoFormat); }
         static int CUDAAPI HandlePictureDecodeProc(void* pUserData, CUVIDPICPARAMS* pPicParams) { return ((NvDecoder*)pUserData)->HandlePictureDecode(pPicParams); }
         static int CUDAAPI HandlePictureDisplayProc(void* pUserData, CUVIDPARSERDISPINFO* pDispInfo) { return ((NvDecoder*)pUserData)->HandlePictureDisplay(pDispInfo); }
