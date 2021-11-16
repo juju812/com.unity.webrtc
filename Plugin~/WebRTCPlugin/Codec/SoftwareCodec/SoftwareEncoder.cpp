@@ -34,6 +34,15 @@ namespace webrtc
         m_initializationResult = CodecInitializationResult::Success;
     }
 
+    void SoftwareEncoder::SetResolution(int width, int height) {
+        m_width = width;
+        m_height = height;
+        m_initializationResult = CodecInitializationResult::NotInitialized;
+        delete m_encodeTex;
+        m_encodeTex = m_device->CreateCPUReadTextureV(m_width, m_height, m_textureFormat);
+        m_initializationResult = CodecInitializationResult::Success;
+    }
+
     bool SoftwareEncoder::CopyBuffer(void* frame)
     {
         m_device->CopyResourceFromNativeV(m_encodeTex, frame);
@@ -45,7 +54,6 @@ namespace webrtc
         const rtc::scoped_refptr<webrtc::I420Buffer> i420Buffer = m_device->ConvertRGBToI420(m_encodeTex);
         if (nullptr == i420Buffer)
             return false;
-
         webrtc::VideoFrame frame =
             webrtc::VideoFrame::Builder()
             .set_video_frame_buffer(i420Buffer)

@@ -31,9 +31,10 @@ namespace Unity.WebRTC
         public event OnAudioReceived OnAudioReceived;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public event DelegateOnAudioReceive OnAudioReceiveEvent;
+
         /// <summary>
         ///
         /// </summary>

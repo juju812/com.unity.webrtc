@@ -103,11 +103,10 @@ namespace Unity.WebRTC
                 m_destTexture.width = m_sourceTexture.width;
                 m_destTexture.height = m_sourceTexture.height;
                 m_destTexture.Create();
-                WebRTC.Context.SetVideoEncoderParameter(self, m_sourceTexture.width, m_sourceTexture.height,
+                WebRTC.Context.SetVideoEncoderParameter(self, m_destTexture.width, m_destTexture.height, 
                                                         m_sourceTexture.graphicsFormat, m_destTexture.GetNativeTexturePtr());
                 WebRTC.Context.UpdateEncoderParams(self);
             }
-
             if (m_needFlip)
             {
                 Graphics.Blit(m_sourceTexture, m_destTexture, WebRTC.flipMat);
@@ -124,7 +123,6 @@ namespace Unity.WebRTC
         {
             m_sourceTexture = sourceTexture;
         }
-
 
         /// <summary>
         /// Creates a new VideoStream object.

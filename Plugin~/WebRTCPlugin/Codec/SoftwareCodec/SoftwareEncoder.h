@@ -18,7 +18,7 @@ namespace webrtc
         virtual ~SoftwareEncoder();
         void InitV() override;
         void SetRates(uint32_t bitRate, int64_t frameRate) override {}
-        void SetResolution(int width, int height) override {}
+        void SetResolution(int width, int height) override;
         void UpdateSettings() override {}
         bool CopyBuffer(void* frame) override;
         bool EncodeFrame(int64_t timestamp_us) override;

@@ -19,6 +19,12 @@ namespace Unity.WebRTC
         Hardware = 1
     }
 
+    public enum DecoderType
+    {
+        Software = 0,
+        Hardware = 1
+    }
+
     /// <summary>
     ///
     /// </summary>
@@ -362,13 +368,12 @@ namespace Unity.WebRTC
         /// </summary>
         /// <param name="type"></param>
         /// <param name="limitTextureSize"></param>
-        public static void Initialize(EncoderType type = EncoderType.Hardware, bool limitTextureSize = true)
-        {
-            Initialize(type, limitTextureSize, false, false, NativeLoggingSeverity.LS_INFO);
-        }
 
-        public static void Initialize(EncoderType type, bool limitTextureSize, bool forTest, bool enableNativeLog = false,
-            NativeLoggingSeverity nativeLoggingSeverity = NativeLoggingSeverity.LS_INFO)
+        public static void Initialize(EncoderType encoderType = EncoderType.Hardware, 
+                                      DecoderType decoderType = DecoderType.Hardware, 
+                                      bool limitTextureSize = true, 
+                                      bool enableNativeLog = false,
+                                      NativeLoggingSeverity nativeLoggingSeverity = NativeLoggingSeverity.LS_INFO)
         {
             if (s_context != null)
                 throw new InvalidOperationException("Already initialized WebRTC.");
@@ -401,7 +406,7 @@ namespace Unity.WebRTC
 #if UNITY_IOS && !UNITY_EDITOR
             NativeMethods.RegisterRenderingWebRTCPlugin();
 #endif
-            s_context = Context.Create(encoderType:type, forTest:forTest);
+            s_context = Context.Create(encoderType: encoderType, decoderType: decoderType);
             NativeMethods.SetCurrentContext(s_context.self);
             s_syncContext = SynchronizationContext.Current;
             var flipShader = Resources.Load<Shader>("Flip");
@@ -804,7 +809,7 @@ namespace Unity.WebRTC
         public static extern void RegisterDebugLog(DelegateDebugLog func, [MarshalAs(UnmanagedType.U1)] bool enableNativeLog,
             NativeLoggingSeverity nativeLoggingSeverity);
         [DllImport(WebRTC.Lib)]
-        public static extern IntPtr ContextCreate(int uid, EncoderType encoderType, [MarshalAs(UnmanagedType.U1)] bool forTest);
+        public static extern IntPtr ContextCreate(int uid, EncoderType encoderType, DecoderType decoderType);
         [DllImport(WebRTC.Lib)]
         public static extern void ContextDestroy(int uid);
         [DllImport(WebRTC.Lib)]
@@ -1138,14 +1143,12 @@ namespace Unity.WebRTC
             Graphics.ExecuteCommandBuffer(_command);
             _command.Clear();
         }
-
         public static void UpdateEncoderParams(IntPtr callback, IntPtr track)
         {
             _command.IssuePluginEventAndData(callback, (int)VideoStreamRenderEventId.UpdateEncoderParams, track);
             Graphics.ExecuteCommandBuffer(_command);
             _command.Clear();
         }
-
         public static void FinalizeEncoder(IntPtr callback, IntPtr track)
         {
             _command.IssuePluginEventAndData(callback, (int)VideoStreamRenderEventId.Finalize, track);

@@ -15,14 +15,14 @@ namespace Unity.WebRTC
         private IntPtr renderFunction;
         private IntPtr textureUpdateFunction;
 
-        public static Context Create(int id = 0, EncoderType encoderType = EncoderType.Hardware, bool forTest = false)
+        public static Context Create(int id = 0, EncoderType encoderType = EncoderType.Hardware, DecoderType decoderType = DecoderType.Hardware)
         {
             if (encoderType == EncoderType.Hardware && !NativeMethods.GetHardwareEncoderSupport())
             {
                 throw new ArgumentException("Hardware encoder is not supported");
             }
 
-            var ptr = NativeMethods.ContextCreate(id, encoderType, forTest);
+            var ptr = NativeMethods.ContextCreate(id, encoderType, decoderType);
             return new Context(ptr, id);
         }
 
