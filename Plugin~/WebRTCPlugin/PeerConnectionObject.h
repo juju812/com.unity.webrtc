@@ -19,7 +19,7 @@ namespace webrtc
     using DelegateOnConnectionStateChange = void(*)(PeerConnectionObject*, webrtc::PeerConnectionInterface::PeerConnectionState);
     using DelegateOnDataChannel = void(*)(PeerConnectionObject*, DataChannelObject*);
     using DelegateOnRenegotiationNeeded = void(*)(PeerConnectionObject*);
-    using DelegateOnTrack = void(*)(PeerConnectionObject*, webrtc::RtpTransceiverInterface*);
+    using DelegateOnTrack = void(*)(PeerConnectionObject*, const char* mid, webrtc::RtpTransceiverInterface*);
     using DelegateOnRemoveTrack = void(*)(PeerConnectionObject*, webrtc::RtpReceiverInterface*);
 
     class PeerConnectionObject

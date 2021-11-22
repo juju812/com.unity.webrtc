@@ -92,7 +92,12 @@ namespace webrtc
 
         if (onTrack != nullptr)
         {
-            onTrack(this, transceiver.get());
+            std::string mid = std::string();
+            webrtc::RtpTransceiverInterface* t = transceiver.get();
+            if (t != nullptr && t->mid().has_value()) {
+                mid = t->mid().value();
+            }
+            onTrack(this, mid.c_str(), t);
         }
     }
 

@@ -5,11 +5,17 @@ namespace Unity.WebRTC
     public class RTCRtpTransceiver : RefCountedObject
     {
         private RTCPeerConnection peer;
+        private string mid;
 
-        internal RTCRtpTransceiver(IntPtr ptr, RTCPeerConnection peer) : base(ptr)
+        internal RTCRtpTransceiver(IntPtr ptr, string mid, RTCPeerConnection peer) : base(ptr)
         {
             WebRTC.Table.Add(self, this);
             this.peer = peer;
+            this.mid = mid;
+        }
+
+        internal RTCRtpTransceiver(IntPtr ptr, RTCPeerConnection peer) : this(ptr, "", peer)
+        {
         }
 
         ~RTCRtpTransceiver()
@@ -80,6 +86,13 @@ namespace Unity.WebRTC
             }
         }
 
+        public string Mid
+        {
+            get
+            {
+                return mid;
+            }
+        }
         /// <summary>
         ///
         /// </summary>

@@ -776,7 +776,7 @@ namespace Unity.WebRTC
     //according to JS API naming, use OnNegotiationNeeded instead of OnRenegotiationNeeded
     internal delegate void DelegateNativeOnNegotiationNeeded(IntPtr ptr);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate void DelegateNativeOnTrack(IntPtr ptr, IntPtr transceiver);
+    internal delegate void DelegateNativeOnTrack(IntPtr ptr, [MarshalAs(UnmanagedType.LPStr)]string mid, IntPtr transceiver);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate void DelegateNativeOnRemoveTrack(IntPtr ptr, IntPtr receiver);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
