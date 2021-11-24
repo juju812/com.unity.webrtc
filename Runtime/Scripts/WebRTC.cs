@@ -750,6 +750,7 @@ namespace Unity.WebRTC
         }
     }
 
+    public delegate void DelegateOnFrameCallback(uint rendererId, IntPtr i420Buffer, uint width, uint height, uint timestamp);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate void DelegateDebugLog([MarshalAs(UnmanagedType.LPStr)] string str);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -880,6 +881,8 @@ namespace Unity.WebRTC
         public static extern void PeerConnectionGetStats(IntPtr ptr);
         [DllImport(WebRTC.Lib)]
         public static extern void PeerConnectionSenderGetStats(IntPtr ptr, IntPtr sender);
+        [DllImport(WebRTC.Lib)]
+        public static extern void ContextSetDelegateOnFrameCallback(IntPtr context, uint renderId, DelegateOnFrameCallback callback);
         [DllImport(WebRTC.Lib)]
         public static extern void ContextGetSenderCapabilities(IntPtr context, TrackKind kind, out IntPtr capabilities);
         [DllImport(WebRTC.Lib)]
