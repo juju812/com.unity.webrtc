@@ -25,8 +25,9 @@ void UnityVideoRenderer::OnFrame(const webrtc::VideoFrame &frame)
     {
         frame_buffer = frame_buffer->ToI420();
     }
-
+    
     SetFrameBuffer(frame_buffer);
+    m_timestamp = frame.timestamp();
 }
 
 uint32_t UnityVideoRenderer::GetId()
@@ -45,6 +46,11 @@ rtc::scoped_refptr<webrtc::VideoFrameBuffer> UnityVideoRenderer::GetFrameBuffer(
     return m_frameBuffer;
 }
 
+void UnityVideoRenderer::SetDelegateOnFrameCallback(DelegateOnFrameCallback delegateOnFrameCallback)
+{
+    m_delegateOnFrameCallback = delegateOnFrameCallback;
+}
+
 void UnityVideoRenderer::SetFrameBuffer(rtc::scoped_refptr<webrtc::VideoFrameBuffer> buffer)
 {
     std::unique_lock<std::mutex> lock(m_mutex);
@@ -54,6 +60,29 @@ void UnityVideoRenderer::SetFrameBuffer(rtc::scoped_refptr<webrtc::VideoFrameBuf
     }
 
     m_frameBuffer = buffer;
+}
+
+void UnityVideoRenderer::OnFrameCallback(rtc::scoped_refptr<webrtc::I420BufferInterface> i420_buffer, int width, int height)
+{
+    if (m_delegateOnFrameCallback != nullptr)
+    {
+        size_t size = width * height * 3 / 2;
+
+        if (m_i420buffer.size() != size)
+        {
+            m_i420buffer.resize(size);
+        }
+
+        if (0 > libyuv::ConvertFromI420(
+            i420_buffer->DataY(), i420_buffer->StrideY(), i420_buffer->DataU(),
+            i420_buffer->StrideU(), i420_buffer->DataV(), i420_buffer->StrideV(),
+            m_i420buffer.data(), 0, width, height, libyuv::FOURCC_I420))
+        {
+            RTC_LOG(LS_INFO) << "failed convert videoFrame to i420Buffer";
+        }
+
+        m_delegateOnFrameCallback(m_id, m_i420buffer.data(), width, height, m_timestamp);
+    }
 }
 
 void UnityVideoRenderer::ConvertVideoFrameToTextureAndWriteToBuffer(int width, int height, libyuv::FourCC format)
@@ -87,7 +116,8 @@ void UnityVideoRenderer::ConvertVideoFrameToTextureAndWriteToBuffer(int width, i
     {
         RTC_LOG(LS_INFO) << "failed libyuv::ConvertFromI420";
     }
-}
 
+    OnFrameCallback(i420_buffer, width, height);
+}
 } // end namespace webrtc
 } // end namespace unity

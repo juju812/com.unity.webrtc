@@ -379,3 +379,23 @@ extern "C" UnityRenderingEventAndData UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API
     s_context = context;
     return TextureUpdateCallback;
 }
+
+/*static void SetDelegateOnFrameCallback(uint32_t render_id, DelegateOnFrameCallback delegateOnFrameCallback)
+{
+    if (s_context == nullptr)
+        return;
+    if (!ContextManager::GetInstance()->Exists(s_context))
+        return;
+    auto renderer = s_context->GetVideoRenderer(render_id);
+    if (renderer == nullptr)
+    {
+        return;
+    }
+    renderer->SetDelegateOnFrameCallback(delegateOnFrameCallback);
+}
+
+extern "C" void UNITY_INTERFACE_EXPORT SetOnFrameCallback(Context * context, uint32_t render_id, DelegateOnFrameCallback delegateOnFrameCallback)
+{
+    s_context = context;
+    SetDelegateOnFrameCallback(render_id, delegateOnFrameCallback);
+}*/

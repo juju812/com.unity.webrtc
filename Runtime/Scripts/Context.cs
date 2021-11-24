@@ -187,6 +187,11 @@ namespace Unity.WebRTC
             NativeMethods.ContextRegisterMediaStreamObserver(self, stream.GetSelfOrThrow());
         }
 
+        public void SetDelegateOnFrameCallback(uint rendererId, DelegateOnFrameCallback delegateOnFrameCallback)
+        {
+            NativeMethods.ContextSetDelegateOnFrameCallback(self, rendererId, delegateOnFrameCallback);
+        }
+
         public void MediaStreamRegisterOnAddTrack(MediaStream stream, DelegateNativeMediaStreamOnAddTrack callback)
         {
             NativeMethods.MediaStreamRegisterOnAddTrack(self, stream.GetSelfOrThrow(), callback);
@@ -196,7 +201,6 @@ namespace Unity.WebRTC
         {
             NativeMethods.MediaStreamRegisterOnRemoveTrack(self, stream.GetSelfOrThrow(), callback);
         }
-
 
         public void AudioTrackRegisterAudioReceiveCallback(IntPtr track, DelegateAudioReceive callback)
         {

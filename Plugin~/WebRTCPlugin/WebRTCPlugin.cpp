@@ -1245,6 +1245,19 @@ extern "C"
         }
     };
 
+    UNITY_INTERFACE_EXPORT void ContextSetDelegateOnFrameCallback(
+        Context* context, uint32_t render_id, DelegateOnFrameCallback delegateOnFrameCallback)
+    {
+        if (!ContextManager::GetInstance()->Exists(context))
+            return;
+        auto renderer = context->GetVideoRenderer(render_id);
+        if (renderer == nullptr)
+        {
+            return;
+        }
+        renderer->SetDelegateOnFrameCallback(delegateOnFrameCallback);
+    }
+
     UNITY_INTERFACE_EXPORT void ContextGetSenderCapabilities(
         Context* context, TrackKind trackKind, RTCRtpCapabilities** parameters)
     {

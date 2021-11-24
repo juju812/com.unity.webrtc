@@ -1,3 +1,4 @@
+using AOT;
 using System;
 using System.Collections.Concurrent;
 using System.ComponentModel;
@@ -6,17 +7,19 @@ using UnityEngine.Experimental.Rendering;
 
 namespace Unity.WebRTC
 {
+    public delegate void OnVideoFrameReceived(VideoFrame frame);
+
     public class VideoStreamTrack : MediaStreamTrack
     {
         internal static ConcurrentDictionary<IntPtr, WeakReference<VideoStreamTrack>> s_tracks =
             new ConcurrentDictionary<IntPtr, WeakReference<VideoStreamTrack>>();
 
-        bool m_needFlip = false;
-        Texture m_sourceTexture;
-        RenderTexture m_destTexture;
-
-        UnityVideoRenderer m_renderer;
-        VideoTrackSource _source;
+        public event OnVideoFrameReceived OnVideoFrameCallback;
+        private bool m_needFlip = false;
+        private Texture m_sourceTexture;
+        private RenderTexture m_destTexture;
+        private UnityVideoRenderer m_renderer;
+        private VideoTrackSource _source;
 
         private static RenderTexture CreateRenderTexture(int width, int height)
         {
@@ -71,7 +74,8 @@ namespace Unity.WebRTC
             m_destTexture = CreateRenderTexture(m_sourceTexture.width, m_sourceTexture.height);
 
             m_renderer = new UnityVideoRenderer(WebRTC.Context.CreateVideoRenderer(), this);
-
+            WebRTC.Context.SetDelegateOnFrameCallback(m_renderer.id, DelegateOnFrameCallback);
+            
             return m_destTexture;
         }
 
@@ -202,6 +206,20 @@ namespace Unity.WebRTC
                 s_tracks.TryRemove(self, out var value);
             }
             base.Dispose();
+        }
+
+        [MonoPInvokeCallback(typeof(DelegateOnFrameCallback))]
+        public static void DelegateOnFrameCallback(uint rendererId, IntPtr i420Buffer, uint width, uint height, uint timestamp)
+        {
+            foreach (WeakReference<VideoStreamTrack> trackRef in s_tracks.Values)
+            {
+                VideoStreamTrack track;
+                bool success = trackRef.TryGetTarget(out track);
+                if (success && track.m_renderer?.id == rendererId)
+                {
+                    track.OnVideoFrameCallback?.Invoke(new VideoFrame(track.Id, i420Buffer, (int)width, (int)height, timestamp));
+                }
+            }
         }
     }
 

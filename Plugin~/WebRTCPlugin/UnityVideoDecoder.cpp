@@ -41,28 +41,12 @@ namespace unity
             m_decoder->Decode(data, size, &m_ppFrame, &m_nFrameReturned, 0, &m_pTimestamp, m_pts);
 
             if (m_ppFrame != nullptr && m_nFrameReturned > 0) {
-                /*std::vector<uint8_t> data = {};
-                for (int i = 0; i < m_nFrameReturned; i++) {
-                    data.push_back(*(m_ppFrame[i]));
-                }
-                const rtc::scoped_refptr<FrameBuffer> buffer =
-                    new rtc::RefCountedObject<FrameBuffer>(
-                        m_width, m_height, data, m_decoder->Id());
-                webrtc::VideoFrame::Builder builder = webrtc::VideoFrame::Builder()
-                    .set_video_frame_buffer(buffer)
-                    .set_timestamp_us(0)
-                    .set_timestamp_rtp(input_image.Timestamp())
-                    .set_ntp_time_ms(input_image.NtpTimeMs());
-                webrtc::VideoFrame videoFrame = builder.build();
-                m_callback->Decoded(videoFrame);
-                */
-
                 rtc::scoped_refptr<webrtc::I420Buffer> i420_buffer =
                     buffer_pool_.CreateI420Buffer(m_width, m_height);
                 libyuv::NV12ToI420(
-                    m_ppFrame[0], m_width, //m_decoder->GetDeviceFramePitch(),
-                    m_ppFrame[0] + m_height * m_width,// * nvdec->GetDeviceFramePitch(),
-                    m_width, //nvdec->GetDeviceFramePitch(),
+                    m_ppFrame[0], m_width, 
+                    m_ppFrame[0] + m_height * m_width,
+                    m_width, 
                     i420_buffer->MutableDataY(),
                     i420_buffer->StrideY(), i420_buffer->MutableDataU(),
                     i420_buffer->StrideU(), i420_buffer->MutableDataV(),
